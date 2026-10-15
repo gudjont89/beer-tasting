@@ -1,11 +1,117 @@
 :root {
   font-family: system-ui, sans-serif;
-  color-scheme: light dark;
+  color-scheme: dark;
+  --bg: #1b1209;
+  --fg: #f5e9d3;
+  --beer: #e8a317;
+  --glass: #f5e9d3;
 }
 
+* {
+  box-sizing: border-box;
+}
+
+html,
 body {
   margin: 0;
+  height: 100%;
+  background: var(--bg);
+  color: var(--fg);
+  overflow: hidden;
+  overscroll-behavior: none;
+  touch-action: none;
+  user-select: none;
+}
+
+#app {
+  height: 100dvh;
+  padding: env(safe-area-inset-top) 16px env(safe-area-inset-bottom);
+}
+
+[hidden] {
+  display: none !important;
+}
+
+.start {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  text-align: center;
+}
+
+.start h1 {
+  margin: 0;
+}
+
+.start button {
+  font: inherit;
+  font-size: 1.25rem;
+  padding: 14px 32px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--beer);
+  color: #2a1a05;
+}
+
+.scene {
+  height: 100%;
   display: grid;
-  place-items: center;
-  min-height: 100vh;
+  grid-template-columns: 1fr auto;
+  grid-template-rows: auto 1fr;
+  gap: 16px 0;
+  padding: 16px 0;
+}
+
+.glass {
+  grid-column: 1 / -1;
+  width: 100%;
+}
+
+.bottle {
+  grid-column: 2;
+  grid-row: 2;
+  height: 100%;
+  max-height: 60dvh;
+  align-self: start;
+}
+
+.score {
+  grid-column: 1;
+  grid-row: 2;
+  align-self: center;
+  justify-self: center;
+  font-size: 4.5rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.score small {
+  font-size: 1.5rem;
+  opacity: 0.6;
+  margin-left: 6px;
+}
+
+.liquid {
+  fill: var(--beer);
+}
+
+.outline {
+  fill: none;
+  stroke: var(--glass);
+  stroke-width: 3;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.marks line {
+  stroke: var(--glass);
+  stroke-width: 2;
+}
+
+.marks text {
+  fill: var(--glass);
+  font-size: 14px;
+  text-anchor: middle;
 }
