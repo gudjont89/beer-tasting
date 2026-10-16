@@ -73,3 +73,39 @@ export function terrainHeight(x: number, z: number): number {
     Math.cos(z * 0.029 - x * 0.017) * 2;
   return h + 13;
 }
+
+/** Tree cone dimensions at scale 1: height and base radius. Shared so rendering and collision agree. */
+export const TREE_HEIGHT = 14;
+export const TREE_BASE_RADIUS = 3.5;
+
+export interface Tree {
+  x: number;
+  z: number;
+  /** Terrain height at the trunk; the cone's base sits here. */
+  baseY: number;
+  scale: number;
+}
+
+/** Small deterministic PRNG so every client builds the identical forest. */
+function mulberry32(seed: number) {
+  return () => {
+    seed = (seed + 0x6d2b79f5) | 0;
+    let t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+const TREE_COUNT = 400;
+
+export const TREES: readonly Tree[] = (() => {
+  const rand = mulberry32(1337);
+  const trees: Tree[] = [];
+  for (let i = 0; i < TREE_COUNT; i++) {
+    const x = (rand() * 2 - 1) * (WORLD_HALF_SIZE - 10);
+    const z = (rand() * 2 - 1) * (WORLD_HALF_SIZE - 10);
+    const scale = 0.7 + rand() * 0.9;
+    trees.push({ x, z, baseY: terrainHeight(x, z), scale });
+  }
+  return trees;
+})();
