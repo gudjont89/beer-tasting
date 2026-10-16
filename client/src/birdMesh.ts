@@ -1,78 +1,56 @@
-import { Color3, Mesh, MeshBuilder, StandardMaterial, TransformNode, type Scene } from '@babylonjs/core';
+import { LoadAssetContainerAsync, TransformNode, type AssetContainer, type Scene } from '@babylonjs/core';
+import '@babylonjs/loaders/glTF';
+import seagullUrl from './assets/seagull.glb?url';
 
 export interface BirdVisual {
   root: TransformNode;
-  /** Advance wing flapping; `speed` scales the flap rate. */
+  /** Idle motion for a gliding bird; `speed` is currently unused (the model has no flap). */
   animate(timeSec: number, speed: number): void;
   dispose(): void;
 }
 
-/** Stable pleasant colour per session id. */
-function colorFor(id: string): Color3 {
-  let h = 0;
-  for (const ch of id) h = (h * 31 + ch.charCodeAt(0)) >>> 0;
-  return Color3.FromHSV(h % 360, 0.6, 0.95);
+// The model is ~85 units across; the game world expects a bird roughly 4 units wide.
+const MODEL_SCALE = 0.05;
+// Rotation about Y that makes the model's beak point along +Z (the game's forward axis).
+const MODEL_YAW = Math.PI / 2;
+
+const containers = new WeakMap<Scene, AssetContainer>();
+
+/** Load the seagull once per scene. Must finish before `createBird` is called. */
+export async function loadBirdModel(scene: Scene): Promise<void> {
+  if (containers.has(scene)) return;
+  containers.set(scene, await LoadAssetContainerAsync(seagullUrl, scene, { pluginExtension: '.glb' }));
 }
 
 export function createBird(scene: Scene, id: string): BirdVisual {
+  const container = containers.get(scene);
+  if (!container) throw new Error('createBird called before loadBirdModel');
+
   const root = new TransformNode(`bird-${id}`, scene);
-  const mat = new StandardMaterial(`birdMat-${id}`, scene);
-  mat.diffuseColor = colorFor(id);
-  mat.specularColor = Color3.Black();
-  const beakMat = new StandardMaterial(`beakMat-${id}`, scene);
-  beakMat.diffuseColor = new Color3(1, 0.7, 0.1);
+  const model = new TransformNode(`birdModel-${id}`, scene);
+  model.parent = root;
+  model.scaling.setAll(MODEL_SCALE);
+  model.rotation.y = MODEL_YAW;
 
-  const parts: Mesh[] = [];
-  const add = (mesh: Mesh, material = mat) => {
-    mesh.material = material;
-    parts.push(mesh);
-    return mesh;
-  };
+  // Instances share geometry and the (single) material with the container.
+  const instance = container.instantiateModelsToScene((name) => `${name}-${id}`, false);
+  for (const node of instance.rootNodes) node.parent = model;
 
-  const body = add(MeshBuilder.CreateSphere('body', { diameter: 1, segments: 8 }, scene));
-  body.scaling.set(0.9, 0.8, 1.8);
-  body.parent = root;
-
-  const head = add(MeshBuilder.CreateSphere('head', { diameter: 0.6, segments: 8 }, scene));
-  head.position.set(0, 0.25, 0.95);
-  head.parent = root;
-
-  // Cone points +Y by default; rotate to point along +Z (forward).
-  const beak = add(MeshBuilder.CreateCylinder('beak', { height: 0.4, diameterTop: 0, diameterBottom: 0.2, tessellation: 8 }, scene), beakMat);
-  beak.rotation.x = Math.PI / 2;
-  beak.position.set(0, 0.22, 1.35);
-  beak.parent = root;
-
-  const tail = add(MeshBuilder.CreateBox('tail', { width: 0.5, height: 0.05, depth: 0.8 }, scene));
-  tail.position.set(0, 0.05, -1.1);
-  tail.parent = root;
-
-  // Wings hinge at the body, so each sits under a pivot node we can rotate.
-  const makeWing = (side: 1 | -1) => {
-    const pivot = new TransformNode(`wingPivot${side}`, scene);
-    pivot.parent = root;
-    pivot.position.set(side * 0.35, 0.1, 0.1);
-    const wing = add(MeshBuilder.CreateBox('wing', { width: 2, height: 0.06, depth: 0.9 }, scene));
-    wing.position.x = side * 1;
-    wing.parent = pivot;
-    return pivot;
-  };
-  const left = makeWing(-1);
-  const right = makeWing(1);
+  // Per-bird phase so a flock doesn't wobble in unison.
+  let phase = 0;
+  for (const ch of id) phase = (phase * 31 + ch.charCodeAt(0)) % 628;
+  phase /= 100;
 
   return {
     root,
-    animate(timeSec, speed) {
-      const flap = Math.sin(timeSec * (6 + speed * 0.15)) * 0.5;
-      // Babylon: +rotation.z lifts the +X side.
-      right.rotation.z = flap;
-      left.rotation.z = -flap;
+    animate(timeSec) {
+      model.rotation.z = Math.sin(timeSec * 1.3 + phase) * 0.04;
+      model.position.y = Math.sin(timeSec * 0.9 + phase) * 0.08;
     },
     dispose() {
-      for (const p of parts) p.dispose();
+      instance.dispose();
+      model.dispose();
       root.dispose();
-      mat.dispose();
-      beakMat.dispose();
     },
   };
 }

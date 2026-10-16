@@ -31,3 +31,7 @@ then open `https://<your-ip>:5173` and accept the self-signed certificate warnin
 - The server rejects poses that exceed `MAX_SPEED` (with tolerance), clamps to world bounds, and sends a `correction` to snap the client back.
 - State patches go out every 50 ms; remote birds are rendered 100 ms in the past and interpolated.
 - Anything competitive (hits, scoring) must be decided on the server, not trusted from the client.
+
+## Credits
+
+[Flying seagull](https://poly.pizza/m/6Tpj_vcWP3f) by Poly by Google [CC-BY](https://creativecommons.org/licenses/by/3.0/) via [Poly Pizza](https://poly.pizza)

@@ -1,6 +1,6 @@
 import { Engine, FreeCamera, Scene, Vector3 } from '@babylonjs/core';
 import { CLIENT_SEND_RATE_HZ, terrainHeight } from '@bird/shared';
-import { createBird } from './birdMesh.ts';
+import { createBird, loadBirdModel } from './birdMesh.ts';
 import { FlightModel } from './flight.ts';
 import { InputController } from './input.ts';
 import { Network } from './network.ts';
@@ -43,6 +43,10 @@ async function start() {
     const camera = new FreeCamera('cam', new Vector3(0, 80, -20), scene);
     camera.minZ = 0.3;
     camera.maxZ = 2000;
+
+    statusEl.textContent = 'Loading model…';
+    await loadBirdModel(scene);
+    statusEl.textContent = 'Connecting…';
 
     const remotes = new RemoteBirds(scene);
     const network = new Network();
