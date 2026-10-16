@@ -1,16 +1,21 @@
 {
-  "name": "beer-tasting",
+  "name": "bird-game",
   "private": true,
   "version": "0.1.0",
   "type": "module",
+  "workspaces": [
+    "shared",
+    "server",
+    "client"
+  ],
   "scripts": {
-    "dev": "vite",
-    "typecheck": "tsc",
-    "build": "tsc && vite build",
-    "preview": "vite preview"
+    "dev": "concurrently -n server,client -c blue,green \"npm run dev -w server\" \"npm run dev -w client\"",
+    "typecheck": "npm run typecheck --workspaces",
+    "build": "npm run build -w client"
   },
   "devDependencies": {
-    "typescript": "^7.0.2",
-    "vite": "^8.3.4"
+    "@types/node": "^26.6.5",
+    "concurrently": "^9.2.5",
+    "typescript": "^7.0.2"
   }
 }

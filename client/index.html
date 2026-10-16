@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no"
+    />
+    <meta name="theme-color" content="#87b8e8" />
+    <title>Birds</title>
+    <link rel="stylesheet" href="/src/style.css" />
+  </head>
+  <body>
+    <canvas id="game"></canvas>
+    <div id="hud" hidden></div>
+    <form id="start">
+      <h1>Birds</h1>
+      <input id="name" name="name" placeholder="Your name" maxlength="16" autocomplete="off" />
+      <label id="tilt-row" hidden><input id="tilt" type="checkbox" /> Steer by tilting my phone</label>
+      <button type="submit">Fly</button>
+      <p id="status"></p>
+      <p class="hint">Desktop: W/S pitch, A/D bank, or arrow keys.</p>
+    </form>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

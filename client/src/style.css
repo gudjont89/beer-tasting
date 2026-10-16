@@ -1,0 +1,21 @@
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; overflow: hidden; background: #87b8e8; font-family: system-ui, sans-serif; }
+#game { width: 100%; height: 100%; display: block; touch-action: none; outline: none; }
+
+#start {
+  position: fixed; inset: 0; margin: auto; width: min(320px, 90vw); height: fit-content;
+  display: flex; flex-direction: column; gap: 12px; padding: 24px;
+  background: rgba(255, 255, 255, 0.92); border-radius: 12px; text-align: center;
+}
+#start h1 { margin: 0; }
+#start input[type='text'], #start input:not([type]) { padding: 10px; font-size: 16px; border: 1px solid #aaa; border-radius: 8px; }
+#start button { padding: 12px; font-size: 18px; border: 0; border-radius: 8px; background: #2b6cb0; color: #fff; }
+#start button:disabled { opacity: 0.5; }
+#start .hint, #status { margin: 0; font-size: 13px; color: #444; }
+#start[hidden] { display: none; }
+
+#hud {
+  position: fixed; top: calc(8px + env(safe-area-inset-top)); left: 8px;
+  padding: 6px 10px; border-radius: 8px; background: rgba(0, 0, 0, 0.4); color: #fff; font-size: 14px;
+  pointer-events: none; white-space: pre;
+}
