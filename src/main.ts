@@ -19,7 +19,7 @@ const marks = Array.from({ length: SCALE_MAX + 1 }, (_, i) => {
     <text x="${x}" y="${GLASS.y + GLASS.height + 24}">${i}</text>`;
 }).join('');
 
-document.querySelector('#app').innerHTML = `
+requireElement('#app').innerHTML = `
   <section class="start" id="start">
     <h1>Beer Tasting</h1>
     <p>Tilt your phone on its side to pour the bottle into the glass.</p>
@@ -59,27 +59,33 @@ document.querySelector('#app').innerHTML = `
   </section>
 `;
 
-const startScreen = document.querySelector('#start');
-const scene = document.querySelector('#scene');
-const glassLiquid = document.querySelector('#glass-liquid');
-const bottleLiquid = document.querySelector('#bottle-liquid');
-const scoreLabel = document.querySelector('#score');
+function requireElement<T extends Element>(selector: string): T {
+  const element = document.querySelector<T>(selector);
+  if (!element) throw new Error(`Missing element: ${selector}`);
+  return element;
+}
+
+const startScreen = requireElement<HTMLElement>('#start');
+const scene = requireElement<HTMLElement>('#scene');
+const glassLiquid = requireElement<SVGRectElement>('#glass-liquid');
+const bottleLiquid = requireElement<SVGRectElement>('#bottle-liquid');
+const scoreLabel = requireElement<HTMLElement>('#score');
 
 let glassLevel = 0; // 0..1, the bottle holds the remaining 1 - glassLevel
 let tiltDeg = 0;
 
 function render() {
-  glassLiquid.setAttribute('width', glassLevel * GLASS.width);
+  glassLiquid.setAttribute('width', String(glassLevel * GLASS.width));
 
   const bottleHeight = (1 - glassLevel) * (BOTTLE.bottom - BOTTLE.top);
-  bottleLiquid.setAttribute('y', BOTTLE.bottom - bottleHeight);
-  bottleLiquid.setAttribute('height', bottleHeight);
+  bottleLiquid.setAttribute('y', String(BOTTLE.bottom - bottleHeight));
+  bottleLiquid.setAttribute('height', String(bottleHeight));
 
   scoreLabel.textContent = (glassLevel * SCALE_MAX).toFixed(1);
 }
 
 // Pour rate in [-1, 1]: positive tilts pour into the glass, the opposite tilt pours back.
-function pourRate(deg) {
+function pourRate(deg: number): number {
   const magnitude = Math.abs(deg);
   if (magnitude < POUR_START_DEG) return 0;
   const strength = Math.min(1, (magnitude - POUR_START_DEG) / (POUR_FULL_DEG - POUR_START_DEG));
@@ -87,7 +93,7 @@ function pourRate(deg) {
 }
 
 let lastFrame = performance.now();
-function tick(now) {
+function tick(now: number) {
   const dt = Math.min(0.1, (now - lastFrame) / 1000);
   lastFrame = now;
 
@@ -100,7 +106,7 @@ function tick(now) {
 
 // Rotation of the phone within the screen plane. Gravity is read in device axes, so with the
 // phone upright y is ~+9.8; turning it counter-clockwise (top edge to the left) moves it to +x.
-function onDeviceMotion(event) {
+function onDeviceMotion(event: DeviceMotionEvent) {
   const g = event.accelerationIncludingGravity;
   if (!g || g.x == null || g.y == null) return;
   const deg = (Math.atan2(g.x, g.y) * 180) / Math.PI;
@@ -122,5 +128,5 @@ async function start() {
   requestAnimationFrame(tick);
 }
 
-document.querySelector('#start-button').addEventListener('click', start);
+requireElement('#start-button').addEventListener('click', start);
 render();
